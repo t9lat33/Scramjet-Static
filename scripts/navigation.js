@@ -234,7 +234,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         if (game.blank === true) return;
         addRecentlyPlayed(game);
+    
         let targetFrameUrl;
+    
         if (game.source === 'playline') {
             targetFrameUrl = game.url;
         } else {
@@ -242,14 +244,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.open(game.url.startsWith('http') ? game.url : game.url.replace("{HTML_URL}", htmlURL), '_blank');
                 return;
             }
-            targetFrameUrl = game.direct
-              ? `/page/gameframe.html?url=${encodeURIComponent(game.url)}&name=${encodeURIComponent(game.name)}&direct=true`
-              : `/page/gameframe.html?url=${encodeURIComponent(game.url.replace("{HTML_URL}", htmlURL))}&name=${encodeURIComponent(game.name)}`;
+    
+            const parts = game.url.split('/');
+            const gameId = parts[parts.length - 1] || parts[parts.length - 2];
+    
+            targetFrameUrl = `/api/resonance/rvvASMiM/${gameId}`;
         }
+    
         frame.src = targetFrameUrl;
         lastSelectedNestUrl = targetFrameUrl;
         updateActiveStates(navLink);
-      };
+    };
+    
       return navLink;
   }
 
