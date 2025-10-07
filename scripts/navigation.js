@@ -113,9 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
               const db = await openPlaylineDB();
               const tx = db.transaction(PLAYLINE_STORE_NAME, 'readwrite');
-              await tx.objectStore(PLAYLINE_STORE_NAME).clear();
+              const store = tx.objectStore(PLAYLINE_STORE_NAME);
+              await store.clear();
               for (const game of allPlaylineGamesCache) {
-                  tx.store.add(game);
+                  store.add(game); // Corrected line
               }
               await tx.done;
               localStorage.setItem(PLAYLINE_VERSION_KEY, PLAYLINE_DB_VERSION.toString());
