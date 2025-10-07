@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const parts = game.url.split('/');
             const gameId = parts[parts.length - 1] || parts[parts.length - 2];
     
-            targetFrameUrl = `https://vapor.my/api/resonance/rvvASMiM/${gameId}`;
+            targetFrameUrl = `https://vapor.my/api/resonance/rvvASMiM/${gameId}?gd_sdk_referrer_url=yjgames.gamedistribution.com`;
         }
     
         frame.src = targetFrameUrl;
