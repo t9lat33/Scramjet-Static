@@ -102,7 +102,36 @@ document.addEventListener('DOMContentLoaded', () => {
           try {
               const response = await fetch('/_a/playline.json');
               if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-              const games = await response.json();
+              
+              const totalSize = +response.headers.get('Content-Length');
+              const reader = response.body.getReader();
+              let loaded = 0;
+              let chunks = [];
+              
+              while(true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+                  chunks.push(value);
+                  loaded += value.length;
+                  
+                  if (totalSize) {
+                      const progress = Math.round((loaded / totalSize) * 100);
+                      const progressBar = document.getElementById('playline-progress-bar');
+                      if (progressBar) {
+                          progressBar.style.width = progress + '%';
+                      }
+                  }
+              }
+              
+              let chunksAll = new Uint8Array(loaded);
+              let position = 0;
+              for(let chunk of chunks) {
+                  chunksAll.set(chunk, position);
+                  position += chunk.length;
+              }
+              
+              const resultText = new TextDecoder("utf-8").decode(chunksAll);
+              const games = JSON.parse(resultText);
 
               allPlaylineGamesCache = games.map(game => ({
                   name: game.Title.trim(),
@@ -116,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const store = tx.objectStore(PLAYLINE_STORE_NAME);
               await store.clear();
               for (const game of allPlaylineGamesCache) {
-                  store.add(game); // Corrected line
+                  store.add(game);
               }
               await tx.done;
               localStorage.setItem(PLAYLINE_VERSION_KEY, PLAYLINE_DB_VERSION.toString());
@@ -153,19 +182,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupVirtualScroll(gameListContainer, sortedGames) {
       const scrollContainer = nestNavContainer.querySelector('.nav-scroll-container');
       gameListContainer.innerHTML = '';
-
       const sizer = document.createElement('div');
       sizer.className = 'virtual-scroll-sizer';
       sizer.style.height = `${sortedGames.length * VIRTUAL_ITEM_HEIGHT}px`;
-
       const visibleItemsContainer = document.createElement('div');
       visibleItemsContainer.className = 'virtual-scroll-list';
-
       sizer.appendChild(visibleItemsContainer);
       gameListContainer.appendChild(sizer);
-
       let lastRenderedStart = -1;
-
       function renderVisibleItems() {
           const scrollTop = scrollContainer.scrollTop;
           const viewportHeight = scrollContainer.clientHeight;
@@ -181,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
           visibleItemsContainer.appendChild(fragment);
           visibleItemsContainer.style.transform = `translateY(${startIndex * VIRTUAL_ITEM_HEIGHT}px)`;
       }
-
       scrollContainer.onscroll = debounce(renderVisibleItems, 10);
       renderVisibleItems();
   }
@@ -190,37 +213,27 @@ document.addEventListener('DOMContentLoaded', () => {
       const navLink = document.createElement('a');
       navLink.className = 'nav-item';
       navLink.href = '#';
-
       let isFavorited = false;
       let iconContainerHTML = `<i class="fa-regular fa-gamepad game-icon-default"></i>`;
-
       if (game.source === 'zones') {
           const favorites = getFromStorage('favoriteGames');
           isFavorited = favorites.includes(game.name);
           if (isFavorited) navLink.classList.add('nav-item-favorited');
           iconContainerHTML += `<i class="game-icon-star ${isFavorited ? 'fa-solid' : 'fa-regular'} fa-star"></i>`;
       }
-
-      navLink.innerHTML = `
-        <div class="icon-container">${iconContainerHTML}</div>
-        <span class="nav-text">${game.name}</span>
-      `;
-
+      navLink.innerHTML = `<div class="icon-container">${iconContainerHTML}</div><span class="nav-text">${game.name}</span>`;
       if (game.source === 'zones') {
           const iconContainer = navLink.querySelector('.icon-container');
           iconContainer.onclick = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
+              e.preventDefault(); e.stopPropagation();
               toggleFavorite(game.name);
               updateAndRenderGames(document.querySelector('.game-search-input').value, 'games');
           };
       }
-
       navLink.onclick = (e) => {
         e.preventDefault();
         if (game.blank === true) return;
         addRecentlyPlayed(game);
-
         let targetFrameUrl;
         if (game.source === 'playline') {
             targetFrameUrl = game.url;
@@ -233,12 +246,10 @@ document.addEventListener('DOMContentLoaded', () => {
               ? `/page/gameframe.html?url=${encodeURIComponent(game.url)}&name=${encodeURIComponent(game.name)}&direct=true`
               : `/page/gameframe.html?url=${encodeURIComponent(game.url.replace("{HTML_URL}", htmlURL))}&name=${encodeURIComponent(game.name)}`;
         }
-
         frame.src = targetFrameUrl;
         lastSelectedNestUrl = targetFrameUrl;
         updateActiveStates(navLink);
       };
-
       return navLink;
   }
 
@@ -246,13 +257,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const gameListContainer = document.querySelector('.game-list-dynamic-container');
       const noResultsMessage = document.querySelector('.no-results-message');
       if (!gameListContainer) return;
-
       const lowerCaseQuery = query.toLowerCase();
       const sourceData = sourceType === 'playline' ? allPlaylineGamesCache : allZonesCache;
       let sourceGames = lowerCaseQuery
           ? sourceData.filter(game => game.name.toLowerCase().includes(lowerCaseQuery))
           : [...sourceData];
-
       if (sourceType === 'games') {
           const favorites = getFromStorage('favoriteGames');
           const recentlyPlayed = getFromStorage('recentlyPlayed');
@@ -274,7 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
           allGamesSorted = sourceGames.sort((a, b) => a.name.localeCompare(b.name));
       }
-
       noResultsMessage.style.display = (allGamesSorted.length === 0 && lowerCaseQuery) ? 'flex' : 'none';
       setupVirtualScroll(gameListContainer, allGamesSorted);
   }
@@ -283,38 +291,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemList = nestNavContainer.querySelector('.nav-item-list');
     itemList.innerHTML = '';
     nestNavContainer.querySelector('.nav-scroll-container').onscroll = null;
-
     const backLink = document.createElement("a");
     backLink.className = "nav-item";
     backLink.innerHTML = `<div class="icon-container"><i class="fa-regular fa-chevron-left"></i></div><span class="nav-text">Back</span>`;
     backLink.href = "#";
     backLink.onclick = (e) => { e.preventDefault(); mainNavContainer.classList.remove('nest-active'); nestNavContainer.classList.remove('active'); updateActiveStates(activeNestParent); };
-
     const searchContainer = document.createElement('div');
     searchContainer.className = 'game-search-container';
     searchContainer.innerHTML = `<i class="fa-regular fa-search game-search-icon"></i><input type="text" placeholder="Filter games..." class="game-search-input">`;
     const searchInput = searchContainer.querySelector('input');
-
     const noResultsMessage = document.createElement('a');
     noResultsMessage.className = 'nav-item no-results-message';
     noResultsMessage.innerHTML = `<span class="nav-text" style="opacity:1;">No matching games found.</span>`;
     noResultsMessage.style.display = 'none';
-
     const divider1 = document.createElement('div');
     divider1.className = 'nav-divider';
-
     const gameListContainer = document.createElement('div');
     gameListContainer.className = 'game-list-dynamic-container';
-
     itemList.append(backLink, searchContainer, divider1, gameListContainer, noResultsMessage);
-
     const dataSource = sourceType === 'playline' ? allPlaylineGamesCache : allZonesCache;
-
     if (dataSource === null) {
       gameListContainer.innerHTML = '<a class="nav-item"><span class="nav-text" style="opacity:1; color: #ff8a8a;">Error loading games.</span></a>';
       return;
     }
-
     updateAndRenderGames('', sourceType);
     searchInput.addEventListener('input', debounce(() => updateAndRenderGames(searchInput.value, sourceType), 500));
   }
@@ -333,18 +332,37 @@ document.addEventListener('DOMContentLoaded', () => {
           const itemList = nestNavContainer.querySelector('.nav-item-list');
           itemList.innerHTML = '';
           nestNavContainer.querySelector('.nav-scroll-container').onscroll = null;
-
           const backLink = document.createElement("a");
           backLink.className = "nav-item";
           backLink.innerHTML = `<div class="icon-container"><i class="fa-regular fa-chevron-left"></i></div><span class="nav-text">Back</span>`;
           backLink.href = "#";
           backLink.onclick = (e) => { e.preventDefault(); mainNavContainer.classList.remove('nest-active'); nestNavContainer.classList.remove('active'); updateActiveStates(activeNestParent); };
-
           const loadingMessage = document.createElement('a');
           loadingMessage.className = 'nav-item';
           loadingMessage.innerHTML = `<span class="nav-text" style="opacity: 0.6; font-style: italic; font-size: 0.9em;">loading gamelist...</span>`;
+          
 
-          itemList.append(backLink, loadingMessage);
+          // was lazy and asked AI to make me a cool style and it worked so :shrug:
+          const progressContainer = document.createElement('div');
+          progressContainer.className = 'nav-item';
+          progressContainer.style.padding = '0px 15px';
+          const progressBarOuter = document.createElement('div');
+          progressBarOuter.style.width = '100%';
+          progressBarOuter.style.height = '6px';
+          progressBarOuter.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+          progressBarOuter.style.borderRadius = '3px';
+          progressBarOuter.style.overflow = 'hidden';
+          const progressBarInner = document.createElement('div');
+          progressBarInner.id = 'playline-progress-bar';
+          progressBarInner.style.width = '0%';
+          progressBarInner.style.height = '100%';
+          progressBarInner.style.backgroundColor = '#fafafa';
+          progressBarInner.style.borderRadius = '3px';
+          progressBarInner.style.transition = 'width 0.2s ease-out';
+          progressBarOuter.appendChild(progressBarInner);
+          progressContainer.appendChild(progressBarOuter);
+
+          itemList.append(backLink, loadingMessage, progressContainer);
       } else {
           showGamePanel('playline');
       }
