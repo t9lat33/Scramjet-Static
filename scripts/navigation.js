@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const parts = game.url.split('/');
             const gameId = parts[parts.length - 1] || parts[parts.length - 2];
     
-            targetFrameUrl = `/api/resonance/rvvASMiM/${gameId}`;
+            targetFrameUrl = `https://vapor.my/api/resonance/rvvASMiM/${gameId}`;
         }
     
         frame.src = targetFrameUrl;
