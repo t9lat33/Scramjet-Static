@@ -189,9 +189,10 @@
       const mainModalConfig = {
         icon: "/_a/logo.new.png",
         title: "VAPOR 3.8/9",
-        content: "🏆 Introducing Playline\n21,000 games, right at your fingertips. Playline is in beta, not all games may work. Report them in the Discord!\n\n- 🦾 AI has been fixed\n- 🔍 New Browser UI + Features\n- ❔ New feature coming soon",
+        content: "🏆 Introducing Playline\n<strong>21,000 games</strong>, right at your fingertips. <small>Playline is in beta, not all games may work. Report them in the Discord!</small>\n\n- 🦾 AI has been fixed\n- 🔍 New Browser UI + Features\n- ❔ New feature coming soon",
         buttonText: "Woah",
-        quoted: true
+        quoted: true,
+        ishtml: true,
       };
     </script>
     <script>
@@ -223,22 +224,27 @@
 
         titleEl.textContent = title;
 
-        if (isHtml) {
-          bodyEl.innerHTML = content;
-        } else if (quoted) {
+        if (quoted) {
           const sections = content.split(/\n\s*\n/);
           bodyEl.innerHTML = sections.map(block => {
             const lines = block.split(/\n/);
-            return `<span class="quote-line">${lines.join("<br>")}</span>`;
+            const joined = lines.join("<br>");
+            return `<span class="quote-line">${joined}</span>`;
           }).join("<br><br>");
-        } else {
+        } 
+        else if (isHtml) {
+          bodyEl.innerHTML = content;
+        } 
+        else {
           bodyEl.innerHTML = content
             .split("\n")
             .map(line => line.replace(/</g, "&lt;").replace(/>/g, "&gt;")) // escape
             .join("<br>");
         }
+
         buttonEl.textContent = buttonText;
       }
+
 
       function showModal() {
         mainModal.classList.add("active");
