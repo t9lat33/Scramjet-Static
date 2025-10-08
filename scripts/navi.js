@@ -7,7 +7,7 @@ const navItems = [
   { type: "divider" },
   { title: "Dashboard", icon: "fa-table-columns", type: "item", url: "/page/dash.html" },
   { title: "Games", icon: "fa-gamepad", type: "item", nest: "games" },
-  { title: "Media", icon: "fa-clapperboard", type: "item", nest: "playline" },
+  { title: "Playline", icon: "fa-trophy", type: "item", nest: "playline" },
   { type: "divider" },
   { title: "Chat", icon: "fa-comments-alt", url: "https://vtx.chat.cdn.cloudflare.net/embed/vapor", type: "item" },
   { title: "??? <span class='badge'>Coming Soon</span>", icon: "fa-desktop", url: "page/vm-priv.html", type: "item" },

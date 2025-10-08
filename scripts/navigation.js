@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let playlineCachePromise = null;
 
   // devs: increment this version number if you update the playline.json at all.
-  const PLAYLINE_DB_VERSION = 1;
+  const PLAYLINE_DB_VERSION = 1.1;
 
   const PLAYLINE_DB_NAME = 'PlaylineGamesDB';
   const PLAYLINE_STORE_NAME = 'games';
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
               allPlaylineGamesCache = games.map(game => ({
                 name: game.Title.trim(),
                 Md5: game.Md5,
-                url: `https://vapor.my/api/resonance/rvvASMiM/${game.Md5}/?gd_sdk_referrer_url=yjgames.gamedistribution.com`,
+                url: `/api/resonance/rvvASMiM/${game.Md5}/?gd_sdk_referrer_url=yjgames.gamedistribution.com`,
                 source: 'playline'
             }));            
               console.log(`successflly fetched ${allPlaylineGamesCache.length} playline games. caching`);
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.open(game.url.startsWith('http') ? game.url : game.url.replace("{HTML_URL}", htmlURL), '_blank');
                 return;
             }
-            targetFrameUrl = `https://vapor.my/api/resonance/rvvASMiM/${game.Md5}/?gd_sdk_referrer_url=yjgames.gamedistribution.com`;
+            targetFrameUrl = `/api/resonance/rvvASMiM/${game.Md5}/?gd_sdk_referrer_url=yjgames.gamedistribution.com`;
         }
     
         frame.src = targetFrameUrl;
