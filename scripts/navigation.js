@@ -134,10 +134,11 @@ document.addEventListener('DOMContentLoaded', () => {
               const games = JSON.parse(resultText);
 
               allPlaylineGamesCache = games.map(game => ({
-                  name: game.Title.trim(),
-                  url: game.Url,
-                  source: 'playline'
-              }));
+                name: game.Title.trim(),
+                Md5: game.Md5,
+                url: `https://vapor.my/api/resonance/rvvASMiM/${game.Md5}/?gd_sdk_referrer_url=yjgames.gamedistribution.com`,
+                source: 'playline'
+            }));            
               console.log(`successflly fetched ${allPlaylineGamesCache.length} playline games. caching`);
 
               const db = await openPlaylineDB();
