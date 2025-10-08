@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const mainNavContainer = document.getElementById("nav-items");
   const extrasNavContainer = document.getElementById("nav-items-extras");
   const nestNavContainer = document.getElementById("nav-items-nest");
+  const whatsNewBtn = document.querySelector(".whatsnew-btn");
   const settingsBtn = document.querySelector(".settings-btn");
   const extrasBtn = document.querySelector(".extras-btn");
   const frame = document.getElementById("frame");
@@ -448,6 +449,9 @@ document.addEventListener('DOMContentLoaded', () => {
     container.appendChild(navLink);
   }
 
+  whatsNewBtn.onclick = () => {
+    showModal();
+  };
   extrasBtn.onclick = () => {
     const isActive = extrasNavContainer.classList.contains('active');
     mainNavContainer.classList.toggle('extras-active', !isActive);
