@@ -244,11 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.open(game.url.startsWith('http') ? game.url : game.url.replace("{HTML_URL}", htmlURL), '_blank');
                 return;
             }
-    
-            const parts = game.url.split('/');
-            const gameId = parts[parts.length - 1] || parts[parts.length - 2];
-    
-            targetFrameUrl = `https://vapor.my/api/resonance/rvvASMiM/${gameId}?gd_sdk_referrer_url=yjgames.gamedistribution.com`;
+            targetFrameUrl = `https://vapor.my/api/resonance/rvvASMiM/${game.Md5}/?gd_sdk_referrer_url=yjgames.gamedistribution.com`;
         }
     
         frame.src = targetFrameUrl;
